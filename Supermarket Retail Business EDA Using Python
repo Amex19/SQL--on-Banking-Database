@@ -1,0 +1,470 @@
+## Supermarket Retail Business EDA Using Python
+
+## 1. Reading Data
+
+
+import pandas as pd
+
+df=pd.read_csv(r"C:\Toronto\Python\Python Project Dataset\supermarket_sales.csv")
+
+df.info()
+
+df
+
+## 2. Importing librarires
+
+import warnings
+warnings.filterwarnings('ignore')
+
+# Importing the numpy and pandas package
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O 
+
+#!pip install https://github.com/pandas-profiling/pandas-profiling/archive/master.zip
+#import pandas_profiling
+
+# Data Visualisation
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+
+## 3. Summary of data
+
+df.count() #Count non-NA cells for each column or row.
+
+## 4.Shape of the dataset
+
+df.shape 
+
+df.value_counts()
+
+## 5.  Renaming columns
+
+df=df.rename(columns={"Payment":"paymentMethod","gross margin percentage": "GMP","Rank":"Rating"})
+
+
+df.count()
+
+type(df.columns)
+
+## 6. Variables  value_counts()
+#### Return a Series containing counts of unique rows in the DataFrame.
+
+df["Branch"].value_counts()#returns frequncy of each levels
+
+Yangon       (A)
+Mandalay     (B)
+Naypyitaw    (C)
+
+df["City"].value_counts()
+
+df["Customer type"].value_counts()
+
+df["Sex"].value_counts()
+
+df["paymentMethod"].value_counts()
+
+df["Products"].value_counts()
+
+## 7. Head and Tail of the data
+
+df.head()
+
+df.info()
+
+df.tail()
+
+ # Copy of the original Data
+df_orginal2=df[:]
+
+## 7. Handling Duplicate Data
+
+df_nodub=df.drop_duplicates()
+print(df.shape,df_nodub.shape,'\n Number of duplicate data : ',df.shape[0]-df_nodub.shape[0])
+
+# counting missing values: #method #1
+df.isna().sum()
+
+#calculatin no. of missing values for each column and it's percentage
+def percentage_of_miss():
+  df1=df[df.columns[df.isnull().sum()>=1]]# I get a subset of data that contain columns that have at least one missing values
+  total_miss = df1.isnull().sum().sort_values(ascending=False)
+  percent_miss = ((df1.isnull().sum()/df1.isnull().count())*100).sort_values(ascending=False)
+  missing_data = pd.concat([total_miss, percent_miss], axis=1, keys=['Number of Missing', 'Percentage'])
+  return(missing_data)
+
+percentage_of_miss()
+
+df.min()
+
+df.max()
+
+df.mean()
+
+
+df.std()
+
+df.median()
+
+df.mode()
+
+df.quantile(0.25)# 25th percentile
+
+df.quantile(0.75)
+
+#skewness and kurtosis
+df["gross income"].skew()
+df["gross income"].kurt()
+
+## Categgocial variables of the data set
+
+#categrocial variables
+df_cat=df.select_dtypes(include='object')#df.select_dtypes(include=None, exclude=None) Returns a subset of the DataFrame's columns based on the column dtypes
+df_cat.columns
+
+## Numerical variables of the data set
+
+#numerical variables
+df_num=df.select_dtypes(exclude='object')# Just get me the numeric variables
+df_num.columns
+
+df.dtypes
+
+## 7. Dropping Irrelevant Feature
+
+# Invoice Id and Time has no relavance and dropped 
+df.drop(labels=['Invoice ID'], axis=1, inplace=True)#inplace=True to update df
+
+df.shape
+
+df
+
+df.head()
+
+df.tail()
+
+## UNIVARIATE AND BIVARIATE ANAYSIS
+
+## Five number summary of  continous Variables
+
+# Getting the summary of numeric columns of the Data set
+pd.options.display.float_format = "{:.2f}".format
+df.describe()
+
+#Both Numeric and categorical data descrition
+df.describe(include='all')
+
+#finding count (number of non_missing values),unique values(or levels), top(mode) and freq(fequency of mode)
+#Method 1
+df.astype('object').describe()
+
+df.astype('object').describe().transpose() 
+
+## Q 1. What is the linear relatioship among data set variables?
+
+df.corr()    # Compute pairwise correlation of columns and the data has no  NA/null values or missing values
+             # The categorical columns included on the correlation values 
+ # Getting the summary of numeric columns of the Data set
+
+## Correlation analysis
+#### Correlation analysis of the continous variables using pairplot function. The result shows degree linear relationshion among variables.
+
+sns.pairplot(df)
+
+sns.heatmap(np.round(df.corr(),2), annot=True)
+
+#### Correlation analysis indicates the positive or negative or zero correlation between the variables. A positive correlation means that the values of the 2 variables increase together, and negative correlation means the values of one variable decrease with the other. All continous variables in this data set have positive correlation each other except rank. That means an increase of the value of one variable results in increase the other variable. However,  negative correlation results increase of one variable to decrease the other  variable. 
+
+## Univariate Analysis of Categorical Variables
+
+ ### Q 2. Which City the supermarket operate its sales most?
+#### As we can see from the bar chart, the supermarket almost the same in  operational cities 
+
+city_2=df['City'].value_counts()
+city_2
+
+#countplot
+sns.countplot(df['City'])
+plt.title(" ", y=1, fontdict={"fontsize": 20})
+
+City = [ 340,332, 328]
+colors = ['g', 'r', 'y']
+labels = ['Yangon', 'Mandalay', 'Naypyitaw ']
+explode = (0.2, 0, 0)
+
+plt.pie(City, colors=colors, labels= City,explode=explode,
+        counterclock=False, shadow=True)
+plt.title('City Sales Share')
+plt.legend(labels,loc=6)
+plt.show()
+
+plt.pie(City, colors=colors, labels=City,explode=explode,
+        counterclock=False, shadow=True)
+plt.title('City Sales Share')
+plt.legend(labels,loc=6,borderaxespad=25)
+
+plt.pie(City, colors=colors, labels=labels,
+explode=explode, autopct='%0.2f%%', counterclock=True, shadow=True)
+
+## Q 3. Which one is the most popular payment method by customers?
+#### Among the available payment methods, Ewallet(345) and Cash(344) are almost same and pupular one followed by Credit Card(311)
+
+sns.countplot(df['paymentMethod'])
+plt.title(" ", y=1, fontdict={"fontsize": 20})
+
+sns.countplot(df['Product line'])
+plt.title("Product line", y=1, fontdict={"fontsize": 8})
+ 
+
+### Is there any sales difference in the weekdays?
+
+### Bivariate Analysis of Categorical Variables and Chi Square Test of independency
+
+### Q6. Which product line most determine the rating of customers?  
+### Food and beverages and Fasion Accessories most determine  rating by customer.  
+
+cat=df[["Product line", "Rating"]].groupby(['Product line'], as_index=False).sum().sort_values(by='Product line', ascending=False)
+plt.figure(figsize=(15,4))
+sns.barplot(x='Product line', y='Rating', data=cat)
+
+### Q7. Which Gender does the  supermarket most serve in each city ? 
+#### Naypyitaw City serve more females supermarket customers more than other cities and Yangon more male customers
+ 
+
+plt.figure(dpi=120)
+sns.countplot(x ='Gender',hue= "City", data = df) 
+plt.xlabel('Count')
+plt.show()
+
+#### Q8. Which product line most sold make each city more profitable?
+#### As we can see from the picture, the suppermarket sold food and beverage and fasion accessaries which bring profitable more than other cities.
+
+
+plt.figure(dpi=125)
+sns.countplot(y ='Product line',hue = "City", data = df) 
+plt.xlabel('Count')
+plt.show()
+
+Product=df['Product line'].value_counts()
+Product
+
+cat=df[["Product line", "gross income"]].groupby(['Product line'], as_index=False).sum().sort_values(by='gross income', ascending=False)
+plt.figure(figsize=(20,8))
+sns.barplot(x='Product line', y='gross income', data=cat)
+
+### Chi Square Test of independence 
+
+### The Chi-square test statistic can be used if the following conditions are satisfied:
+
+1.N, the total frequency, should be reasonably large, say greater than 50.
+2. The sample observations should be independent. This implies that no individual item should be included twice or more in the sample.
+3. No expected frequencies should be small. Small is a relative term. Preferably each expected frequencies should be larger than 10 but in any case not less than 5.
+
+##### The Null and Alternate Hypotheses
+Recall that we are interested in knowing if there is a relationship between 'Term' and 'Loan Status'. In order to do so, we would have to use the Chi-squared test. But first, let's state our null hypothesis and the alternative hypothesis.
+
+H0:There is no statistically significant relationship between Term and Loan Status.
+
+Ha:There is a statistically significant relationship between Term and Loan Status.
+
+from scipy.stats import chi2_contingency
+def chi_square(c1,c2):
+    chi_2, p_val, dof, exp_val = chi2_contingency(pd.crosstab(df[c1],df[c2],margins = False))# make sure margins = False
+    print("Expected values: \n")
+    print(exp_val)
+    #print('\nChi-square is : %f'%chi_2, '\n\np_value is : %f'%p_val, '\n\ndegree of freedom is : %i'%dof)
+    print(f'\nChi-square is : {chi_2}', f'\n\np_value is : {p_val}', f'\n\ndegree of freedom is :{dof}')
+
+    if p_val < 0.05:# consider significan level is 5%
+        print(F"\nThere is statistiacally significant correlation between {c1} and {c2} at 0.05 significant level")
+    else:
+        print(F"\nThere is no correlation between the two variables( we don't have enough evidence to conclude there is a a statistically significant relationship between {c1} and {c2}")        
+
+chi_square("City",'Gender')
+
+chi_square("Branch",'Gender')
+
+chi_square("Branch",'Customer type')
+
+chi_square("paymentMethod",'Product line')
+
+chi_square("Customer type",'Product line')
+
+### Univariate Analysis of Continous Variables
+
+Quantity purchased by product: The mean quantity is lower for ‘fashion accessories’ and ‘food and beverages’
+
+sns.boxplot( y=df['Unit price'])
+
+Quantity_1=df["Quantity"].value_counts()
+Quantity_1
+
+df['Quantity'].describe()
+
+sns.boxplot( y=df['Quantity'] )
+
+Total_1=df["Total"].value_counts()
+Total_1
+
+df['Total'].describe()
+
+sns.boxplot( y=df['Total'] )
+
+cogs_1=df["cogs"].value_counts()
+cogs_1
+
+df['cogs'].describe()
+
+sns.boxplot( y=df['cogs'] )
+
+# IQR Method to remove outliers
+q1, q3 = np.percentile(df['cogs'], [25, 75])
+iqr = q3 - q1
+lower_bound = q1 - (1.5 * iqr)
+upper_bound = q3 + (1.5 * iqr)
+
+df = df[(df['cogs'] > lower_bound) & (df['cogs'] < upper_bound)]
+
+sns.boxplot( y=df['cogs'] )
+
+Income_1=df["gross income"].value_counts()
+Income_1
+
+df['gross income'].describe()
+
+def outlier_analysis(col):
+    Q1=df[col].quantile(0.25)
+    Q3=df[col].quantile(0.75)
+    IQR=Q3-Q1
+    UIF=Q3+1.5*(IQR)#UIF is upper inner fence
+    LIF=Q1-1.5*(IQR)#LIF is lower inner fence
+    df_out =df[(df[col]<LIF) | (df[col]>UIF)] # I created a new data set that has just include potential outliers
+    sns.distplot(df_out[col])#Plotting univariate distributions.By default, this will draw a histogram and fit a kernel density estimate (KDE)
+   
+    return df_out[col] .describe()
+
+outlier_analysis('gross income')
+
+df['gross income']=df['gross income'].replace(51, np.NaN)
+
+Q1=np.percentile(df.Total, 25)    # Q1
+Q3=np.percentile(df.Total, 75)    #Q3
+IQR=Q3-Q1
+Lower=Q1-(1.5*IQR)
+Upper=Q3-(1.5*IQR)
+df[df["Total"]>Upper]
+
+df[df["Total"]<Lower]
+
+df['gross income'].describe()
+
+sns.boxplot( y=df['gross income'] )
+
+# IQR Method to remove outliers
+q1, q3 = np.percentile(df['gross income'], [25, 75])
+iqr = q3 - q1
+lower_bound = q1 - (1.5 * iqr)
+upper_bound = q3 + (1.5 * iqr)
+
+df = df[(df['gross income'] > lower_bound) & (df['gross income'] < upper_bound)]
+
+sns.boxplot( y=df['gross income'] )
+
+## Q9.What does the gross income look like and is it skewed? Gross income is right skewed   
+
+from scipy.stats import norm
+plt.figure(figsize=(12,9))
+sns.distplot(df['gross income'], fit= norm)
+
+#skewness and kurtosis
+df["gross income"].skew()
+df["gross income"].kurt()
+
+### Bivariate Analysis of Continous variables vs categorical variables using boxplot
+
+## 10. Is  the suppermarket gross income affected by Gender? Yes, the median value of the females contributed for the gross income of the suppermarket is more.
+ 
+
+sns.boxenplot(y = 'Gender', x = 'gross income', data=df )
+
+df("gross income").value.counts()
+
+sns.boxenplot(y = 'Gender', x = 'gross income', data=df )
+
+## Q10 Is there any difference in gross income contribution difference among product lines?  Yes, the mean gross income is lower for ‘fashion accessories’ and ‘food and beverages’
+
+sns.boxenplot(y = 'Product line', x = 'gross income', data=df )
+ 
+
+## Q11  Is there gross income difference among Cities? Yes, Naypyitaw city has more median value and hence more gross income
+
+sns.boxenplot(y = 'City', x = 'gross income', data=df )
+
+## Q12. Which branch has the most rating?
+
+sns.boxplot(x=df['Branch'], y=df['Rating'])
+
+
+
+## Question 12: Does Purchased affect the ratings that the customers provide?
+### The trend line in the scatter plot is flat and this shows that there is no relationship between quantity purchased and rating of customers
+
+
+ x= df['Rating']
+
+ y= df['Quantity']
+
+#create basic scatterplot
+plt.plot('x', 'y' , 'o')
+
+#obtain m (slope) and b(intercept) of linear regression line
+m, b = np.polyfit(x, y , 1)
+
+#add linear regression line to scatterplot 
+plt.plot(x, m*x+b)
+
+#use green as color for individual points
+plt.plot(x, y, 'o', color='green')
+
+#obtain m (slope) and b(intercept) of linear regression line
+m, b = np.polyfit(x, y, 1)
+
+#use red as color for regression line
+plt.plot(x, m*x+b, color='red')
+
+#create scatterplot with regression line
+sns.regplot(x, y)
+
+#Defyining Variables 
+x= df['Rating']
+y= df['Quantity']
+
+#create basic scatterplot
+plt.plot('x', 'y' , 'o')
+
+#add linear regression line to scatterplot 
+plt.plot(x, m*x+b)
+
+#use red as color for regression line
+plt.plot(x, m*x+b, color='red')
+
+#create scatterplot with regression line
+sns.regplot(x, y)
+
+        ## Conclusion and Recommendations 
+. Yangon branch sales(34%) operation is higher followed by Naypyitaw (32.8%). Because of the
+ aggregate gross income generated, project expansion is more reliable for Naypyitaw (32.8%) city if
+ there is plan to open in branch in another neighborhood within the city.
+• Ewallet(35.4%) is the most popular customers payment method followed by cash(34.3%)
+• Gross income of the supermarket is affected by Gender. More gross income generated from female
+customers than males and appropriate client handling and product supply procedure in place.
+• Naypyitaw city the highest of all in gross income and sold food and beverages and fashion accessories.
+However, the aggregate median value of gross income generated is lower.
+• Health and beauty product lines have higher gross income median values. This products sold more in
+Mandalay branch. However, food and beverages and fashion accessories contribute the least gross
+income among others and sold more quantity in Nayphitaw city.
+• The business operation gross income rank is Nayphitaw, Mandlalay and Yagon respectively. However,
+the supermarket has lower rating at Mandalay city. Hence, the manager has to supply food and
+beverages and fashion accessories products which is more impact on rating to Mandalay city.
+• Food and beverages and fashion accessories most determine the rating by customers. This product lines
+most sold in Naypyitaw city. Hence, attention has to be given for Naypyitaw customers.
